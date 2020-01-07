@@ -1,27 +1,42 @@
 package main
 
 import (
-	"./lib"
-	"fmt"
+	"github.com/AlexanderArmua/EjercicioMutantesMELI/lib"
+	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
+type Persona struct {
+	DNA []string `json:"dna" binding:"required"`
+}
+
 func main() {
-	mutante := []string {
-		"ATGCGA",
-		"CAGTGC",
-		"TTATGT",
-		"AGAAGG",
-		"CCCCTA",
-		"TCACTG",
-	}
+	// Default returns an Engine instance with the Logger and Recovery middleware already attached
+	r := gin.Default()
 
-	esMutante, error := lib.IsMutant(mutante, 4)
+	// GET is a shortcut for router.Handle("GET", path, handle)
+	r.POST("/mutant/", func(c *gin.Context) {
+		var persona Persona
+		c.BindJSON(&persona)
 
-	if error == nil {
-		fmt.Printf("Es mutante: %v\n", esMutante)
-	} else {
-		fmt.Println(error.Error())
-	}
+		esMutante, error := lib.IsMutant(persona.DNA, 4)
+
+		if error == nil && esMutante{
+			c.Done()
+		} else {
+			c.String(http.StatusForbidden, "Forbidden")
+		}
+	})
+
+	r.GET("/stats", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"count_mutant_dna": 40,
+			"count_human_dna": 100,
+			"ratio": 0.4,
+		})
+	})
+
+	r.Run()
 }
 
 

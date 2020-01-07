@@ -1,6 +1,9 @@
 package lib
 
-import "errors"
+import (
+	"errors"
+	"sync"
+)
 
 func IsMutant(matrix []string, sizeWord int) (bool, error) {
 	nMatrix := len(matrix)
@@ -12,29 +15,46 @@ func IsMutant(matrix []string, sizeWord int) (bool, error) {
 				return false, errors.New("Tamaño De Matriz Inválido")
 			}
 
-			if nMatrix - col >= sizeWord {
-				if SearchHorizontalWord(matrix, row, col, sizeWord) {
-					wordsFinded++
-				}
-			}
+			var wg sync.WaitGroup
+			wg.Add(4)
 
-			if nMatrix - row >= sizeWord {
-				if SearchVerticalWord(matrix, row, col, sizeWord) {
-					wordsFinded++
+			go func(){
+				if nMatrix - col >= sizeWord {
+					if SearchHorizontalWord(matrix, row, col, sizeWord) {
+						wordsFinded++
+					}
 				}
-			}
+				wg.Done()
+			}()
 
-			if nMatrix - col >= sizeWord && nMatrix - row >= sizeWord {
-				if SearchDiagonalDownWord(matrix, row, col, sizeWord) {
-					wordsFinded++
+			go func(){
+				if nMatrix - row >= sizeWord {
+					if SearchVerticalWord(matrix, row, col, sizeWord) {
+						wordsFinded++
+					}
 				}
-			}
+				wg.Done()
+			}()
 
-			if nMatrix - col >= sizeWord && row + 1 >= sizeWord {
-				if SearchDiagonalUpWord(matrix, row, col, sizeWord) {
-					wordsFinded++
+			go func() {
+				if nMatrix - col >= sizeWord && nMatrix - row >= sizeWord {
+					if SearchDiagonalDownWord(matrix, row, col, sizeWord) {
+						wordsFinded++
+					}
 				}
-			}
+				wg.Done()
+			}()
+
+			go func() {
+				if nMatrix - col >= sizeWord && row + 1 >= sizeWord {
+					if SearchDiagonalUpWord(matrix, row, col, sizeWord) {
+						wordsFinded++
+					}
+				}
+				wg.Done()
+			}()
+
+			wg.Wait()
 
 			// Mas de una secuencia de cuatro letras iguales
 			if wordsFinded >= 2 {
@@ -110,5 +130,3 @@ func nextDiagonalUpChar(matrix []string) func(int, int, int) string {
 		return matrix[row - index][col + index: col + index + 1]
 	}
 }
-
-
