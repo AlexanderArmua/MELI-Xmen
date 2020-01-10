@@ -11,17 +11,13 @@ type Persona struct {
 }
 
 func main() {
-	// Default returns an Engine instance with the Logger and Recovery middleware already attached
 	r := gin.Default()
 
-	// GET is a shortcut for router.Handle("GET", path, handle)
 	r.POST("/mutant/", func(c *gin.Context) {
 		var persona Persona
 		c.BindJSON(&persona)
 
-		esMutante, error := lib.IsMutant(persona.DNA, 4)
-
-		if error == nil && esMutante{
+		if isMutant(persona.DNA) {
 			c.Done()
 		} else {
 			c.String(http.StatusForbidden, "Forbidden")
@@ -29,14 +25,33 @@ func main() {
 	})
 
 	r.GET("/stats", func(c *gin.Context) {
+		stats := lib.GetStats()
 		c.JSON(http.StatusOK, gin.H{
-			"count_mutant_dna": 40,
-			"count_human_dna": 100,
-			"ratio": 0.4,
+			"count_mutant_dna": stats.CountMutantDna,
+			"count_human_dna": stats.CountHumanDna,
+			"ratio": stats.Ratio,
 		})
 	})
 
 	r.Run()
+}
+
+func isMutant(dna []string) bool {
+	item, ok := lib.GetResultado(dna)
+
+	if ok {
+		return item.IsMutant
+	}
+
+	esMutante, error := lib.IsMutant(dna, 4)
+
+	if error != nil {
+		return false
+	}
+
+	defer lib.SaveResult(dna, esMutante)
+
+	return esMutante
 }
 
 

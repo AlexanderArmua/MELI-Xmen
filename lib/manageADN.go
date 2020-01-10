@@ -2,6 +2,7 @@ package lib
 
 import (
 	"errors"
+	"strings"
 	"sync"
 )
 
@@ -10,9 +11,13 @@ func IsMutant(matrix []string, sizeWord int) (bool, error) {
 	wordsFinded := 0
 
 	for row := 0; row < nMatrix; row++ { // Arriba a Abajo
+		if isInValidRow(matrix[row], sizeWord, nMatrix) {
+			return false, errors.New("Tamaño De Matriz Inválido")
+		}
+
 		for col := 0; col < nMatrix; col++ { // Izquierda a Derecha
-			if isInValidRow(matrix[row], sizeWord, nMatrix) {
-				return false, errors.New("Tamaño De Matriz Inválido")
+			if isInvalidrChar(matrix[row][col:col+1]) {
+				return false, errors.New("Caracter de ADN Inválido")
 			}
 
 			var wg sync.WaitGroup
@@ -71,23 +76,27 @@ func isInValidRow(row string, sizeWord, nMatrix int) bool {
 	return lenRow != nMatrix || lenRow < sizeWord
 }
 
+func isInvalidrChar(char string) bool {
+	return !strings.Contains("ATCG", char)
+}
+
 func SearchHorizontalWord(matrix []string, row, col int, sizeWord int) bool {
-	return SearchWord(matrix, row, col, sizeWord, nextHorizontalChar(matrix))
+	return searchWord(matrix, row, col, sizeWord, nextHorizontalChar(matrix))
 }
 
 func SearchVerticalWord(matrix []string, row, col int, sizeWord int) bool {
-	return SearchWord(matrix, row, col, sizeWord, nextVerticalChar(matrix))
+	return searchWord(matrix, row, col, sizeWord, nextVerticalChar(matrix))
 }
 
 func SearchDiagonalDownWord(matrix []string, row, col int, sizeWord int) bool {
-	return SearchWord(matrix, row, col, sizeWord, nextDiagonalDownChar(matrix))
+	return searchWord(matrix, row, col, sizeWord, nextDiagonalDownChar(matrix))
 }
 
 func SearchDiagonalUpWord(matrix []string, row, col int, sizeWord int) bool {
-	return SearchWord(matrix, row, col, sizeWord, nextDiagonalUpChar(matrix))
+	return searchWord(matrix, row, col, sizeWord, nextDiagonalUpChar(matrix))
 }
 
-func SearchWord(matrix []string, row, col int, sizeWord int, nextChar func(int, int, int) string) bool {
+func searchWord(matrix []string, row, col int, sizeWord int, nextChar func(int, int, int) string) bool {
 	firstLetter := matrix[row][col: col + 1]
 	countChars := 1
 
