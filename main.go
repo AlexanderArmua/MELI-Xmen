@@ -28,7 +28,6 @@ func main() {
 	})
 
 	r.GET("/stats", func(c *gin.Context) {
-		//stats = lib.GetStats()
 		c.JSON(http.StatusOK, gin.H{
 			"count_mutant_dna": stats.CountMutantDna,
 			"count_human_dna": stats.CountHumanDna,

@@ -9,6 +9,10 @@ import (
 func IsMutant(matrix []string, sizeWord int) (bool, error) {
 	nMatrix := len(matrix)
 	wordsFinded := 0
+	//
+	//if !isValidMatrix(matrix) {
+	//
+	//}
 
 	for row := 0; row < nMatrix; row++ { // Arriba a Abajo
 		if isInValidRow(matrix[row], sizeWord, nMatrix) {
@@ -71,6 +75,12 @@ func IsMutant(matrix []string, sizeWord int) (bool, error) {
 	return false, nil
 }
 
+//func isValidMatrix(matrix []string, sizeWord int) {
+//	allRowsInOne := strings.Join(matrix, "")
+
+
+//}
+
 func isInValidRow(row string, sizeWord, nMatrix int) bool {
 	lenRow := len(row)
 	return lenRow != nMatrix || lenRow < sizeWord
@@ -107,13 +117,9 @@ func searchWord(matrix []string, row, col int, sizeWord int, nextChar func(int, 
 			// Se encontro un caracter que cortaba la cadena, no se alcanzo la palabra.
 			break
 		}
-
-		if countChars == sizeWord {
-			return true
-		}
 	}
 
-	return false
+	return countChars == sizeWord
 }
 
 func nextHorizontalChar(matrix []string) func(int, int, int) string {
