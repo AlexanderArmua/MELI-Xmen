@@ -1,14 +1,17 @@
 package main
 
 import (
-	"github.com/AlexanderArmua/EjercicioMutantesMELI/lib"
+	"./lib"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"time"
 )
 
 type Persona struct {
 	DNA []string `json:"dna" binding:"required"`
 }
+
+var stats lib.Stats
 
 func main() {
 	r := gin.Default()
@@ -25,7 +28,7 @@ func main() {
 	})
 
 	r.GET("/stats", func(c *gin.Context) {
-		stats := lib.GetStats()
+		//stats = lib.GetStats()
 		c.JSON(http.StatusOK, gin.H{
 			"count_mutant_dna": stats.CountMutantDna,
 			"count_human_dna": stats.CountHumanDna,
@@ -34,6 +37,19 @@ func main() {
 	})
 
 	r.Run()
+}
+
+func init() {
+	generateCacheStatsEvery5Secs()
+}
+
+func generateCacheStatsEvery5Secs() {
+	go func() {
+		for {
+			stats = lib.GetStats()
+			time.Sleep(5 * time.Second)
+		}
+	}()
 }
 
 func isMutant(dna []string) bool {

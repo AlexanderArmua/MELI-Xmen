@@ -23,7 +23,7 @@ func init() {
 }
 
 func GetResultado(dna []string) (Resultado, bool) {
-	hash := generateHash(dna)
+	hash := GenerateHash(dna)
 
 	item, ok := resultados[hash]
 
@@ -31,11 +31,11 @@ func GetResultado(dna []string) (Resultado, bool) {
 }
 
 func SaveResult(dna []string, isMutant bool) {
-	hash := generateHash(dna)
+	hash := GenerateHash(dna)
 	resultados[hash] = Resultado{dna, isMutant}
 }
 
-func generateHash(dna []string) uint32 {
+func GenerateHash(dna []string) uint32 {
 	allRowAsOne := strings.Join(dna, "")
 
 	h := fnv.New32a()
