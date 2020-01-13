@@ -58,7 +58,7 @@ func isMutant(dna []string) bool {
 		return item.IsMutant
 	}
 
-	esMutante, error := lib.IsMutant(dna, 4)
+	esMutante, error := lib.IsMutant(dna)
 
 	if error != nil {
 		return false

@@ -2,11 +2,31 @@ package lib
 
 import (
 	"errors"
+	"github.com/magiconair/properties"
 	"strings"
 	"sync"
 )
 
-func IsMutant(matrix []string, sizeWord int) (bool, error) {
+type Props struct {
+	sizeWord int        	`properties:"sizeWord,default=4"`
+	minCountWords int 		`properties:"minCountWords,default=2"`
+	acceptedChars string    `properties:"acceptedChars,layout=ATCG"`
+}
+
+var props Props
+
+func init() {
+	loadConfigFile()
+}
+
+func loadConfigFile() {
+	p := properties.MustLoadFile("./mutantes.conf", properties.UTF8)
+	props.sizeWord = p.GetInt("sizeWord", 4)
+	props.minCountWords = p.GetInt("minCountWords", 2)
+	props.acceptedChars = p.GetString("acceptedChars", "ATCG")
+}
+
+func IsMutant(matrix []string) (bool, error) {
 	nMatrix := len(matrix)
 	wordsFinded := 0
 	//
@@ -15,7 +35,7 @@ func IsMutant(matrix []string, sizeWord int) (bool, error) {
 	//}
 
 	for row := 0; row < nMatrix; row++ { // Arriba a Abajo
-		if isInValidRow(matrix[row], sizeWord, nMatrix) {
+		if isInValidRow(matrix[row], props.sizeWord, nMatrix) {
 			return false, errors.New("Tamaño De Matriz Inválido")
 		}
 
@@ -28,8 +48,8 @@ func IsMutant(matrix []string, sizeWord int) (bool, error) {
 			wg.Add(4)
 
 			go func(){
-				if nMatrix - col >= sizeWord {
-					if SearchHorizontalWord(matrix, row, col, sizeWord) {
+				if nMatrix - col >= props.sizeWord {
+					if SearchHorizontalWord(matrix, row, col, props.sizeWord) {
 						wordsFinded++
 					}
 				}
@@ -37,8 +57,8 @@ func IsMutant(matrix []string, sizeWord int) (bool, error) {
 			}()
 
 			go func(){
-				if nMatrix - row >= sizeWord {
-					if SearchVerticalWord(matrix, row, col, sizeWord) {
+				if nMatrix - row >= props.sizeWord {
+					if SearchVerticalWord(matrix, row, col, props.sizeWord) {
 						wordsFinded++
 					}
 				}
@@ -46,8 +66,8 @@ func IsMutant(matrix []string, sizeWord int) (bool, error) {
 			}()
 
 			go func() {
-				if nMatrix - col >= sizeWord && nMatrix - row >= sizeWord {
-					if SearchDiagonalDownWord(matrix, row, col, sizeWord) {
+				if nMatrix - col >= props.sizeWord && nMatrix - row >= props.sizeWord {
+					if SearchDiagonalDownWord(matrix, row, col, props.sizeWord) {
 						wordsFinded++
 					}
 				}
@@ -55,8 +75,8 @@ func IsMutant(matrix []string, sizeWord int) (bool, error) {
 			}()
 
 			go func() {
-				if nMatrix - col >= sizeWord && row + 1 >= sizeWord {
-					if SearchDiagonalUpWord(matrix, row, col, sizeWord) {
+				if nMatrix - col >= props.sizeWord && row + 1 >= props.sizeWord {
+					if SearchDiagonalUpWord(matrix, row, col, props.sizeWord) {
 						wordsFinded++
 					}
 				}
@@ -66,7 +86,7 @@ func IsMutant(matrix []string, sizeWord int) (bool, error) {
 			wg.Wait()
 
 			// Mas de una secuencia de cuatro letras iguales
-			if wordsFinded >= 2 {
+			if wordsFinded >= props.minCountWords {
 				return true, nil
 			}
 		}
@@ -87,7 +107,7 @@ func isInValidRow(row string, sizeWord, nMatrix int) bool {
 }
 
 func isInvalidrChar(char string) bool {
-	return !strings.Contains("ATCG", char)
+	return !strings.Contains(props.acceptedChars, char)
 }
 
 func SearchHorizontalWord(matrix []string, row, col int, sizeWord int) bool {
