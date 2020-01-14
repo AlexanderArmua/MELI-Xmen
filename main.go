@@ -52,10 +52,10 @@ func generateCacheStatsEvery5Secs() {
 }
 
 func isMutant(dna []string) bool {
-	item, ok := lib.GetResultado(dna)
+	isMutant, error := lib.GetResultado(dna)
 
-	if ok {
-		return item.IsMutant
+	if error == nil {
+		return isMutant
 	}
 
 	esMutante, error := lib.IsMutant(dna)
