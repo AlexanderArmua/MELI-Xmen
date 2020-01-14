@@ -2,6 +2,7 @@ package main
 
 import (
 	"./lib"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
@@ -31,7 +32,7 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{
 			"count_mutant_dna": stats.CountMutantDna,
 			"count_human_dna": stats.CountHumanDna,
-			"ratio": stats.Ratio,
+			"ratio": stats.GetRatio(),
 		})
 	})
 
@@ -45,7 +46,7 @@ func init() {
 func generateCacheStatsEvery5Secs() {
 	go func() {
 		for {
-			stats = lib.GetStats()
+			stats = lib.CalculateStats()
 			time.Sleep(5 * time.Second)
 		}
 	}()
@@ -55,17 +56,20 @@ func isMutant(dna []string) bool {
 	isMutant, error := lib.GetResultado(dna)
 
 	if error == nil {
+		fmt.Print("TOMADO DEL CACHE EN DATABASE\n")
 		return isMutant
 	}
 
 	esMutante, error := lib.IsMutant(dna)
 
 	if error != nil {
+		fmt.Print("MATRIS ERRONEA CALCULADA NO SE CACHEA\n")
 		return false
 	}
 
 	defer lib.SaveResult(dna, esMutante)
 
+	fmt.Print("CALCULADO Y CACHEADOCACHEA\n")
 	return esMutante
 }
 
