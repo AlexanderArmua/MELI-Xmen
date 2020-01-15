@@ -1,96 +1,118 @@
 package lib
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/prologic/bitcask"
-	"github.com/spf13/cast"
 	"hash/fnv"
 	"strings"
 )
 
 type Resultado struct {
-	Dna      []string
-	IsMutant bool
+	Dna      []string `json:"Dna"`
+	IsMutant bool	  `json:"IsMutant"`
 }
 
 type Stats struct {
-	CountMutantDna int
-	CountHumanDna int
-	Ratio float32
+	CountMutantDna float32
+	CountHumanDna  float32
 }
 
-var resultados map[uint32]Resultado
-
-func init() {
-	inicializarDatabase()
+func (stats Stats) GetRatio() float32 {
+	return stats.CountMutantDna / stats.CountHumanDna
 }
 
-func inicializarDatabase() {
-	resultados = make(map[uint32]Resultado)
-}
+const nombreDB = "./databases/XMenDatabase"
 
-//func GetResultado(dna []string) (Resultado, bool) {
-//	hash := GenerateHash(dna)
-//
-//	item, ok := resultados[hash]
-//
-//	return item, ok
-//}
-
-func GetResultado(dna []string) (bool, error) {
+func GetResultado(dna []string) (Resultado, error) {
 	hash := GenerateHash(dna)
 
-	db, _ := bitcask.Open("./databases/XMenDatabase")
-	defer db.Close()
+	resultado, error := GetIsMutantFromBD(hash)
 
-	//db.Put([]byte("hash"), []byte("1/[ATGCG,ASDQWE,QWEQWEQWEQWEQWEQWEQDSFDS]"))
-
-	isMutant, error := db.Get([]byte(cast.ToString(hash)))
-
-	//item, ok := resultados[hash]
-
-	return cast.ToBool(isMutant), error
+	return resultado, error
 }
 
-//func SaveResult(dna []string, isMutant bool) {
-//	hash := GenerateHash(dna)
-//	resultados[hash] = Rfesultado{dna, isMutant}
-//}
+func GetIsMutantFromBD(hash uint32) (Resultado, error) {
+	database, errorDB := getDatabase()
+
+	mutantByte, errorGet := database.Get(getValueAsByte(hash))
+	defer database.Close()
+
+	// En caso de cualquier error o que no encuentre el dato, no explota y puede continuar
+	if errorDB != nil || mutantByte == nil || errorGet != nil {
+		return Resultado{}, errorGet
+	}
+
+	result, errorParse := converByteToResultado(mutantByte)
+
+	return result, errorParse
+}
+
+func converByteToResultado(mutantByte []byte) (Resultado, error) {
+	res := &Resultado{}
+	err := json.Unmarshal(mutantByte, &res)
+
+	return *res, err
+}
+
+func convertResultadoToByte(dna []string, isMutant bool) []byte {
+	result := Resultado{dna,isMutant}
+	mutanteAsJson, _ := json.Marshal(result)
+
+	return mutanteAsJson
+}
 
 func SaveResult(dna []string, isMutant bool) {
 	hash := GenerateHash(dna)
 
-	db, _ := bitcask.Open("./databases/XMenDatabase")
-	defer db.Close()
+	database, _ := getDatabase()
+	defer database.Close()
 
-	db.Put([]byte(cast.ToString(hash)), []byte(cast.ToString(isMutant)))
+	database.Put(getValueAsByte(hash), convertResultadoToByte(dna, isMutant))
 }
 
 func GenerateHash(dna []string) uint32 {
 	allRowAsOne := strings.Join(dna, "")
-
 	h := fnv.New32a()
 	h.Write([]byte(allRowAsOne))
 
 	return h.Sum32()
 }
 
-func GetStats() Stats {
-	stats := Stats{0,0,0.0}
+func getDatabase() (*bitcask.Bitcask, error) {
+	database, error := bitcask.Open(nombreDB)
+	if error != nil {
+		fmt.Printf("No se pudo abrir la database - Error: %v.\n", error)
+	}
+	return database, error
+}
 
-	for _, value := range resultados {
-		if value.IsMutant {
-			stats.CountMutantDna++
-		} else {
-			stats.CountHumanDna++
-		}
+func getValueAsByte(hash interface{}) []byte{
+	return []byte(fmt.Sprint(hash))
+}
 
-		if stats.CountHumanDna == 0 {
-			stats.Ratio = float32(stats.CountMutantDna) / 1
-		} else {
-			stats.Ratio = float32(stats.CountMutantDna) / float32(stats.CountHumanDna)
-		}
+func CalculateStats() Stats {
+	stats := Stats{0,0}
 
+	database, _ := getDatabase()
+	defer database.Close()
+
+	chKeys := database.Keys()
+
+	for key := range chKeys {
+		mutantByte, _ := database.Get(key)
+
+		mutante, _ := converByteToResultado(mutantByte)
+
+		addNewStat(mutante.IsMutant, &stats)
 	}
 
 	return stats
+}
+
+func addNewStat(isMutant bool, stats *Stats) {
+	stats.CountHumanDna++
+	if isMutant {
+		stats.CountMutantDna++
+	}
 }
