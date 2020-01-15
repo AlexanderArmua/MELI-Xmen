@@ -31,7 +31,7 @@ func (stats *Stats) AddNewStat(isMutant bool) {
 
 const nombreDB = "./databases/XMenDatabase"
 
-func GetResultado(dna []string) (Resultado, error) {
+func GetResultadoFromBD(dna []string) (Resultado, error) {
 	hash := GenerateHash(dna)
 
 	resultado, error := getIsMutantFromBD(hash)

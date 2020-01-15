@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestGetResultado(t *testing.T) {
+func TestGetResultadoFromBD(t *testing.T) {
 	mutante := getADNMutanteDatabase()
 	want := Resultado{mutante, true}
 
@@ -12,7 +12,7 @@ func TestGetResultado(t *testing.T) {
 	SaveResult(want.Dna, want.IsMutant, stats)
 
 	t.Run("Find Horizontal Word", func(t *testing.T) {
-		got, err := GetResultado(mutante)
+		got, err := GetResultadoFromBD(mutante)
 
 		if err != nil || want.IsMutant != true || !EqualString(got.Dna, want.Dna) {
 			t.Errorf("got %v want %v", got, want)
@@ -20,7 +20,7 @@ func TestGetResultado(t *testing.T) {
 	})
 }
 
-func BenchmarkGetResultado(b *testing.B) {
+func BenchmarkGetResultadoFromBD(b *testing.B) {
 	mutante := getADNMutanteDatabase()
 	want := Resultado{mutante, true}
 
@@ -28,7 +28,7 @@ func BenchmarkGetResultado(b *testing.B) {
 	SaveResult(want.Dna, want.IsMutant, stats)
 
 	b.Run("Bench Get Resultados ", func(b *testing.B) {
-		got, err := GetResultado(mutante)
+		got, err := GetResultadoFromBD(mutante)
 
 		if err != nil || want.IsMutant != true || !EqualString(got.Dna, want.Dna) {
 			b.Errorf("got %v want %v", got, want)
@@ -38,7 +38,7 @@ func BenchmarkGetResultado(b *testing.B) {
 	b.RunParallel(
 		func(pb *testing.PB) {
 			for pb.Next() {
-				GetResultado(mutante)
+				GetResultadoFromBD(mutante)
 			}
 		},
 	)

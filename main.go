@@ -48,7 +48,7 @@ func generateFirstCache() {
 }
 
 func isMutant(dna []string) bool {
-	persona, error := lib.GetResultado(dna)
+	persona, error := lib.GetResultadoFromBD(dna)
 
 	if error == nil {
 		return persona.IsMutant
