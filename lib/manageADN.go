@@ -22,6 +22,10 @@ func init() {
 func LoadConfigFile() {
 	p, error := properties.LoadFile("./mutantes.conf", properties.UTF8)
 
+	/**
+		Los archivos de test fallan para buscar "mutantes.conf" porque no esta en una ruta absoluta, se optó por dejar
+	este "if" para poder dejar dentro del github el archivo de configuración y asi se pueda probar este programa mas facilmente.
+	 */
 	if error != nil {
 		props.sizeWord = 4
 		props.minCountWords = 2
