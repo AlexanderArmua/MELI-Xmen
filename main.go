@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"time"
 )
 
 type Persona struct {
 	DNA []string `json:"dna" binding:"required"`
 }
 
-var stats lib.Stats
+var stats *lib.Stats
 
 func main() {
 	r := gin.Default()
@@ -40,15 +39,12 @@ func main() {
 }
 
 func init() {
-	generateCacheStatsEvery5Secs()
+	generateFirstCache()
 }
 
-func generateCacheStatsEvery5Secs() {
+func generateFirstCache() {
 	go func() {
-		for {
-			stats = lib.CalculateStats()
-			time.Sleep(5 * time.Second)
-		}
+		stats = lib.CalculateStats()
 	}()
 }
 
@@ -67,7 +63,7 @@ func isMutant(dna []string) bool {
 		return false
 	}
 
-	defer lib.SaveResult(dna, esMutante)
+	defer lib.SaveResult(dna, esMutante, stats)
 
 	fmt.Print("CALCULADO Y CACHEADOCACHEA\n")
 	return esMutante

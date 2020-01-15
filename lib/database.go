@@ -1,11 +1,9 @@
 package lib
 
 import (
-	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/prologic/bitcask"
-	"hash/fnv"
-	"strings"
 )
 
 type Resultado struct {
@@ -18,8 +16,18 @@ type Stats struct {
 	CountHumanDna  float32
 }
 
-func (stats Stats) GetRatio() float32 {
+func (stats *Stats) GetRatio() float32 {
+	if stats.CountHumanDna == 0 {
+		return 0
+	}
 	return stats.CountMutantDna / stats.CountHumanDna
+}
+
+func (stats *Stats) AddNewStat(isMutant bool) {
+	stats.CountHumanDna++
+	if isMutant {
+		stats.CountMutantDna++
+	}
 }
 
 const nombreDB = "./databases/XMenDatabase"
@@ -29,13 +37,18 @@ func GetResultado(dna []string) (Resultado, error) {
 
 	resultado, error := GetIsMutantFromBD(hash)
 
-	return resultado, error
+	// El algoritmo de Hasheo puede tener errores, con esta validacion aseguramos que sea el correcto.
+	if EqualString(resultado.Dna, dna) {
+		return resultado, error
+	}
+
+	return Resultado{}, errors.New("Crasheo de Hash")
 }
 
 func GetIsMutantFromBD(hash uint32) (Resultado, error) {
 	database, errorDB := getDatabase()
 
-	mutantByte, errorGet := database.Get(getValueAsByte(hash))
+	mutantByte, errorGet := database.Get(GetValueAsByte(hash))
 	defer database.Close()
 
 	// En caso de cualquier error o que no encuentre el dato, no explota y puede continuar
@@ -43,40 +56,20 @@ func GetIsMutantFromBD(hash uint32) (Resultado, error) {
 		return Resultado{}, errorGet
 	}
 
-	result, errorParse := converByteToResultado(mutantByte)
+	result, errorParse := ConverByteToResultado(mutantByte)
 
 	return result, errorParse
 }
 
-func converByteToResultado(mutantByte []byte) (Resultado, error) {
-	res := &Resultado{}
-	err := json.Unmarshal(mutantByte, &res)
-
-	return *res, err
-}
-
-func convertResultadoToByte(dna []string, isMutant bool) []byte {
-	result := Resultado{dna,isMutant}
-	mutanteAsJson, _ := json.Marshal(result)
-
-	return mutanteAsJson
-}
-
-func SaveResult(dna []string, isMutant bool) {
+func SaveResult(dna []string, isMutant bool, stats *Stats) {
 	hash := GenerateHash(dna)
 
 	database, _ := getDatabase()
 	defer database.Close()
 
-	database.Put(getValueAsByte(hash), convertResultadoToByte(dna, isMutant))
-}
+	database.Put(GetValueAsByte(hash), ConvertResultadoToByte(dna, isMutant))
 
-func GenerateHash(dna []string) uint32 {
-	allRowAsOne := strings.Join(dna, "")
-	h := fnv.New32a()
-	h.Write([]byte(allRowAsOne))
-
-	return h.Sum32()
+	stats.AddNewStat(isMutant)
 }
 
 func getDatabase() (*bitcask.Bitcask, error) {
@@ -87,12 +80,8 @@ func getDatabase() (*bitcask.Bitcask, error) {
 	return database, error
 }
 
-func getValueAsByte(hash interface{}) []byte{
-	return []byte(fmt.Sprint(hash))
-}
-
-func CalculateStats() Stats {
-	stats := Stats{0,0}
+func CalculateStats() *Stats {
+	stats := new(Stats)
 
 	database, _ := getDatabase()
 	defer database.Close()
@@ -102,17 +91,11 @@ func CalculateStats() Stats {
 	for key := range chKeys {
 		mutantByte, _ := database.Get(key)
 
-		mutante, _ := converByteToResultado(mutantByte)
+		mutante, _ := ConverByteToResultado(mutantByte)
 
-		addNewStat(mutante.IsMutant, &stats)
+		stats.AddNewStat(mutante.IsMutant)
 	}
 
 	return stats
 }
 
-func addNewStat(isMutant bool, stats *Stats) {
-	stats.CountHumanDna++
-	if isMutant {
-		stats.CountMutantDna++
-	}
-}
