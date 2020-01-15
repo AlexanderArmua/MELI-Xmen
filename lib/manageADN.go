@@ -29,77 +29,68 @@ func loadConfigFile() {
 func IsMutant(matrix []string) (bool, error) {
 	nMatrix := len(matrix)
 	wordsFinded := 0
-	//
-	//if !isValidMatrix(matrix) {
-	//
-	//}
 
-	for row := 0; row < nMatrix; row++ { // Arriba a Abajo
+	for row := range matrix {
 		if isInValidRow(matrix[row], props.sizeWord, nMatrix) {
 			return false, errors.New("Tamaño De Matriz Inválido")
 		}
 
-		for col := 0; col < nMatrix; col++ { // Izquierda a Derecha
+		for col := range matrix {
 			if isInvalidrChar(matrix[row][col:col+1]) {
 				return false, errors.New("Caracter de ADN Inválido")
 			}
 
-			var wg sync.WaitGroup
-			wg.Add(4)
+			/**
+				Al comenzar valida y busca palabras correctas.
+				En el momento que las encuentra, sigue solo para validar toda la matris
+			 */
+			if wordsFinded < props.minCountWords {
+				var wg sync.WaitGroup
+				wg.Add(4)
 
-			go func(){
-				if nMatrix - col >= props.sizeWord {
-					if SearchHorizontalWord(matrix, row, col, props.sizeWord) {
-						wordsFinded++
+				go func(){
+					if nMatrix - col >= props.sizeWord {
+						if SearchHorizontalWord(matrix, row, col, props.sizeWord) {
+							wordsFinded++
+						}
 					}
-				}
-				wg.Done()
-			}()
+					wg.Done()
+				}()
 
-			go func(){
-				if nMatrix - row >= props.sizeWord {
-					if SearchVerticalWord(matrix, row, col, props.sizeWord) {
-						wordsFinded++
+				go func(){
+					if nMatrix - row >= props.sizeWord {
+						if SearchVerticalWord(matrix, row, col, props.sizeWord) {
+							wordsFinded++
+						}
 					}
-				}
-				wg.Done()
-			}()
+					wg.Done()
+				}()
 
-			go func() {
-				if nMatrix - col >= props.sizeWord && nMatrix - row >= props.sizeWord {
-					if SearchDiagonalDownWord(matrix, row, col, props.sizeWord) {
-						wordsFinded++
+				go func() {
+					if nMatrix - col >= props.sizeWord && nMatrix - row >= props.sizeWord {
+						if SearchDiagonalDownWord(matrix, row, col, props.sizeWord) {
+							wordsFinded++
+						}
 					}
-				}
-				wg.Done()
-			}()
+					wg.Done()
+				}()
 
-			go func() {
-				if nMatrix - col >= props.sizeWord && row + 1 >= props.sizeWord {
-					if SearchDiagonalUpWord(matrix, row, col, props.sizeWord) {
-						wordsFinded++
+				go func() {
+					if nMatrix - col >= props.sizeWord && row + 1 >= props.sizeWord {
+						if SearchDiagonalUpWord(matrix, row, col, props.sizeWord) {
+							wordsFinded++
+						}
 					}
-				}
-				wg.Done()
-			}()
+					wg.Done()
+				}()
 
-			wg.Wait()
-
-			// Mas de una secuencia de cuatro letras iguales
-			if wordsFinded >= props.minCountWords {
-				return true, nil
+				wg.Wait()
 			}
 		}
 	}
 
-	return false, nil
+	return wordsFinded >= props.minCountWords, nil
 }
-
-//func isValidMatrix(matrix []string, sizeWord int) {
-//	allRowsInOne := strings.Join(matrix, "")
-
-
-//}
 
 func isInValidRow(row string, sizeWord, nMatrix int) bool {
 	lenRow := len(row)
@@ -134,7 +125,6 @@ func searchWord(matrix []string, row, col int, sizeWord int, nextChar func(int, 
 		if nextChar(row, col, i) == firstLetter{
 			countChars++
 		} else {
-			// Se encontro un caracter que cortaba la cadena, no se alcanzo la palabra.
 			break
 		}
 	}
