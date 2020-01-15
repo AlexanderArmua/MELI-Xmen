@@ -6,27 +6,12 @@ import (
 )
 
 func TestSearchHorizontalWord(t *testing.T) {
-	humano := []string {
-		"ATGCGA",
-		"CAGTGC",
-		"TTATTT",
-		"AGACGG",
-		"GCGTCA",
-		"TCACTG",
-	}
-
-	mutante := []string {
-		"ATGCGA",
-		"CAGTGC",
-		"TTATGT",
-		"AGAAGG",
-		"CCCCTA",
-		"TCACTG",
-	}
+	humano := getADNHumano()
+	mutante := getADNMutante()
 
 	t.Run("Find Horizontal Word", func(t *testing.T) {
 		sizeWord := 4
-		got := SearchHorizontalWord(mutante, 4, 0, sizeWord)
+		got := SearchHorizontalWord(mutante, 5, 0, sizeWord)
 		want := true
 
 		if got != want {
@@ -36,34 +21,18 @@ func TestSearchHorizontalWord(t *testing.T) {
 
 	t.Run("Don't Find Horizontal Word", func(t *testing.T) {
 		sizeWord := 4
-		got := SearchHorizontalWord(humano, 4, 0, sizeWord)
+		got := SearchHorizontalWord(humano, 5, 0, sizeWord)
 		want := false
 
 		if got != want {
 			t.Errorf("got %v want %v", got, want)
 		}
 	})
-
 }
 
 func TestSearchVerticalWord(t *testing.T) {
-	humano := []string {
-		"ATGCGA",
-		"CAGTGC",
-		"TTATTT",
-		"AGACGG",
-		"GCGTCA",
-		"TCACTG",
-	}
-
-	mutante := []string {
-		"ATGCGA",
-		"CAGTGC",
-		"TTATGT",
-		"AGAAGG",
-		"CCCCTA",
-		"TCACTG",
-	}
+	humano := getADNHumano()
+	mutante := getADNMutante()
 
 	t.Run("Find Vertical Word", func(t *testing.T) {
 		sizeWord := 4
@@ -87,23 +56,8 @@ func TestSearchVerticalWord(t *testing.T) {
 }
 
 func TestSearchDiagonalDownWord(t *testing.T) {
-	humano := []string {
-		"ATGCGA",
-		"CAGTGC",
-		"TTATTT",
-		"AGACGG",
-		"GCGTCA",
-		"TCACTG",
-	}
-
-	mutante := []string {
-		"ATGCGA",
-		"CAGTGC",
-		"TTATGT",
-		"AGAAGG",
-		"CCCCTA",
-		"TCACTG",
-	}
+	humano := getADNHumano()
+	mutante := getADNMutante()
 
 	t.Run("Find Diagonal Down Word", func(t *testing.T) {
 		sizeWord := 4
@@ -127,23 +81,8 @@ func TestSearchDiagonalDownWord(t *testing.T) {
 }
 
 func TestSearchDiagonalUpWord(t *testing.T) {
-	humano := []string {
-		"ATGCGA",
-		"CAGTGC",
-		"TTATTT",
-		"AGACGG",
-		"GCGTCA",
-		"TCACTG",
-	}
-
-	mutante := []string {
-		"ATGCGA",
-		"CAGTGC",
-		"TTATGT",
-		"AGTAGG",
-		"CTCCTA",
-		"TCACTG",
-	}
+	humano := getADNHumano()
+	mutante := getADNMutante()
 
 	t.Run("Find Diagonal Up Word", func(t *testing.T) {
 		sizeWord := 4
@@ -167,27 +106,11 @@ func TestSearchDiagonalUpWord(t *testing.T) {
 }
 
 func TestIsMutant(t *testing.T) {
-	humano := []string {
-		"ATGCGA",
-		"CAGTGC",
-		"TTATTT",
-		"AGACGG",
-		"GCGTCA",
-		"TCACTG",
-	}
-
-	mutante := []string {
-		"ATGCGA",
-		"CAGTGC",
-		"TTATGT",
-		"AGTAGG",
-		"CTCCTA",
-		"TCACTG",
-	}
+	humano := getADNHumano()
+	mutante := getADNMutante()
 
 	t.Run("Is Mutant", func(t *testing.T) {
-		sizeWord := 4
-		got, error := IsMutant(mutante, sizeWord)
+		got, error := IsMutant(mutante)
 		want := true
 
 		if error == nil {
@@ -200,8 +123,7 @@ func TestIsMutant(t *testing.T) {
 	})
 
 	t.Run("Is Human", func(t *testing.T) {
-		sizeWord := 4
-		got, error := IsMutant(humano, sizeWord)
+		got, error := IsMutant(humano)
 		want := false
 
 		if error == nil {
@@ -215,28 +137,11 @@ func TestIsMutant(t *testing.T) {
 }
 
 func BenchmarkIsMutant(b *testing.B) {
-	humano := []string {
-		"ATGCGA",
-		"CAGTGC",
-		"TTATTT",
-		"AGACGG",
-		"GCGTCA",
-		"TCACTG",
-	}
-
-	mutante := []string {
-		"ATGCGA",
-		"CAGTGC",
-		"TTATGT",
-		"AGTAGG",
-		"CTCCTA",
-		"TCACTG",
-	}
-
-	sizeWord := 4
+	humano := getADNHumano()
+	mutante := getADNMutante()
 
 	b.Run(fmt.Sprintf("Humano no es Mutante "), func(b *testing.B) {
-		got, _ := IsMutant(humano, sizeWord)
+		got, _ := IsMutant(humano)
 		want := false
 		if got != want {
 			b.Errorf("got %v want %v", got, want)
@@ -246,13 +151,13 @@ func BenchmarkIsMutant(b *testing.B) {
 	b.RunParallel(
 		func(pb *testing.PB) {
 			for pb.Next() {
-				IsMutant(humano, sizeWord)
+				IsMutant(humano)
 			}
 		},
 	)
 
 	b.Run(fmt.Sprintf("Mutante es Mutante "), func(b *testing.B) {
-		got, _ := IsMutant(mutante, sizeWord)
+		got, _ := IsMutant(mutante)
 		want := true
 		if got != want {
 			b.Errorf("got %v want %v", got, want)
@@ -262,8 +167,31 @@ func BenchmarkIsMutant(b *testing.B) {
 	b.RunParallel(
 		func(pb *testing.PB) {
 			for pb.Next() {
-				IsMutant(mutante, sizeWord)
+				IsMutant(mutante)
 			}
 		},
 	)
+
+}
+
+func getADNHumano() []string {
+	return []string {
+		"ATGCGA",
+		"CAGTGC",
+		"TTATTT",
+		"AGACGG",
+		"GCGTCA",
+		"TCACTG",
+	}
+}
+
+func getADNMutante() []string {
+	return []string {
+		"ATGCGA",
+		"CAGTGC",
+		"TTACGT",
+		"AGCAGG",
+		"CCCCTT",
+		"CCCCTG",
+	}
 }

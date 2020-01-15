@@ -2,7 +2,6 @@ package main
 
 import (
 	"./lib"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -52,20 +51,17 @@ func isMutant(dna []string) bool {
 	persona, error := lib.GetResultado(dna)
 
 	if error == nil {
-		fmt.Print("TOMADO DEL CACHE EN DATABASE\n")
 		return persona.IsMutant
 	}
 
 	esMutante, error := lib.IsMutant(dna)
 
 	if error != nil {
-		fmt.Print("MATRIS ERRONEA CALCULADA NO SE CACHEA\n")
 		return false
 	}
 
 	defer lib.SaveResult(dna, esMutante, stats)
 
-	fmt.Print("CALCULADO Y CACHEADOCACHEA\n")
 	return esMutante
 }
 

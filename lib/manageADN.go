@@ -16,14 +16,21 @@ type Props struct {
 var props Props
 
 func init() {
-	loadConfigFile()
+	LoadConfigFile()
 }
 
-func loadConfigFile() {
-	p := properties.MustLoadFile("./mutantes.conf", properties.UTF8)
-	props.sizeWord = p.GetInt("sizeWord", 4)
-	props.minCountWords = p.GetInt("minCountWords", 2)
-	props.acceptedChars = p.GetString("acceptedChars", "ATCG")
+func LoadConfigFile() {
+	p, error := properties.LoadFile("./mutantes.conf", properties.UTF8)
+
+	if error != nil {
+		props.sizeWord = 4
+		props.minCountWords = 2
+		props.acceptedChars = "ATCG"
+	} else {
+		props.sizeWord = p.GetInt("sizeWord", 4)
+		props.minCountWords = p.GetInt("minCountWords", 2)
+		props.acceptedChars = p.GetString("acceptedChars", "ATCG")
+	}
 }
 
 func IsMutant(matrix []string) (bool, error) {

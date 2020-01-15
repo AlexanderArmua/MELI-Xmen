@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/prologic/bitcask"
 )
-
 type Resultado struct {
 	Dna      []string `json:"Dna"`
 	IsMutant bool	  `json:"IsMutant"`
@@ -35,7 +34,7 @@ const nombreDB = "./databases/XMenDatabase"
 func GetResultado(dna []string) (Resultado, error) {
 	hash := GenerateHash(dna)
 
-	resultado, error := GetIsMutantFromBD(hash)
+	resultado, error := getIsMutantFromBD(hash)
 
 	// El algoritmo de Hasheo puede tener errores, con esta validacion aseguramos que sea el correcto.
 	if EqualString(resultado.Dna, dna) {
@@ -45,7 +44,7 @@ func GetResultado(dna []string) (Resultado, error) {
 	return Resultado{}, errors.New("Crasheo de Hash")
 }
 
-func GetIsMutantFromBD(hash uint32) (Resultado, error) {
+func getIsMutantFromBD(hash uint32) (Resultado, error) {
 	database, errorDB := getDatabase()
 
 	mutantByte, errorGet := database.Get(GetValueAsByte(hash))
