@@ -44,7 +44,7 @@ Respuesta: {
 ```
 
 ### Notas
-1. Se implementó por base de datos [bitcask](https://github.com/prologic/bitcask) porque es una base de datos hecha en Go,
+1. Se implementó por base de datos [bitcask](https://git.mills.io/prologic/bitcask) porque es una base de datos hecha en Go,
 de tipo clave-valor, muy rapida en tiempo de respuesta y de implementar. Una base de datos relacional o documental, tendria muchas 
 caracteristicas que no se utilizarian (en este caso solo necesitamos Obtener y Guardar).
 

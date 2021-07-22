@@ -3,7 +3,7 @@ package lib
 import (
 	"errors"
 	"fmt"
-	"github.com/prologic/bitcask"
+	"git.mills.io/prologic/bitcask"
 )
 type Resultado struct {
 	Dna      []string `json:"Dna"`
