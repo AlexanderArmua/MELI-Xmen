@@ -1,14 +1,14 @@
-# Examen Mercadolibre
+# Test Mercadolibre
 
-### Pasos para iniciar
-1. Clonar el proyecto
-2. Importar las dependencias
-3. ```go run main.go```
-4. Queda corriendo en el puerto 8080
+### Steps to init
+1. Clone the repo
+2. Import dependencies
+3. Run main.go file ```go run main.go```
+4. It will be running at port 8080
 
-### Pasos para probar servicios en LOCAL
+### Steps to test endpoints in localhost
 ```
-TipoMensaje: POST 
+Message: POST 
 Url: http://localhost:8080/mutant/
 Body: {
       	"dna":[
@@ -20,10 +20,10 @@ Body: {
       		"TTACTG"
       		]
       }
-Respuesta: 200 o 403
+Response: 200 o 403
 ```
 ```
-TipoMensaje: GET 
+Message: GET 
 Url: http://localhost:8080/stats
 Respuesta: {
                "count_human_dna": 7,
@@ -32,22 +32,7 @@ Respuesta: {
            }
 ```
 
-### Pasos para probar servicios en AWS
-#### Son los mismos que para local, pero cambiando el url.
-- Cambiar "localhost" por "ec2-3-17-193-20.us-east-2.compute.amazonaws.com"
-```
-    TipoMensaje: POST 
-    Url: http://ec2-3-17-193-20.us-east-2.compute.amazonaws.com:8080/mutant/
+### Notes
+1. The database selected for this project was [bitcask](https://github.com/prologic/bitcask), a DB built in Golang, works as KVS, has a very short response time, and is easy to implement. A relational or documental database has a lot of characteristics that we won't use here. In this case, we only need to save and read.
+2. The `mutantes.conf` file and databases will be generated inside project's folder to facilitate the system execution. If it were a software running on production servers that kind of files it will have to be moved to another folder.
 
-    TipoMensaje: GET 
-    Url: http://ec2-3-17-193-20.us-east-2.compute.amazonaws.com:8080/stats
-```
-
-### Notas
-1. Se implementó por base de datos [bitcask](https://github.com/prologic/bitcask) porque es una base de datos hecha en Go,
-de tipo clave-valor, muy rapida en tiempo de respuesta y de implementar. Una base de datos relacional o documental, tendria muchas 
-caracteristicas que no se utilizarian (en este caso solo necesitamos Obtener y Guardar).
-
-2. El archivo `mutantes.conf` y databases se generan dentro de la carpeta del proyecto para facilitar la ejecucion del sistema,
-si fuera un sistema productivo hubiera puesto el archivo `mutantes.conf` en alguna ruta absoluta e igual la base de datos. 
-Aunque esto trajo como problema al testear que no se encontrara el archivo `mutantes.conf`. 
