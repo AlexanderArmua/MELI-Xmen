@@ -33,6 +33,7 @@ Respuesta: {
 ```
 
 ### Notes
-1. The database selected for this project was [bitcask](https://github.com/prologic/bitcask), a DB built in Golang, works as KVS, has a very short response time, and is easy to implement. A relational or documental database has a lot of characteristics that we won't use here. In this case, we only need to save and read.
+1. The database selected for this project was [bitcask](https://git.mills.io/prologic/bitcask), a DB built in Golang, works as KVS, has a very short response time, and is easy to implement. A relational or documental database has a lot of characteristics that we won't use here. In this case, we only need to save and read.
 2. The `mutantes.conf` file and databases will be generated inside project's folder to facilitate the system execution. If it were a software running on production servers that kind of files it will have to be moved to another folder.
+
 
