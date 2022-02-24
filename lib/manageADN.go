@@ -40,6 +40,7 @@ func LoadConfigFile() {
 func IsMutant(matrix []string) (bool, error) {
 	nMatrix := len(matrix)
 	wordsFinded := 0
+	mutex := sync.Mutex
 
 	for row := range matrix {
 		if isInValidRow(matrix[row], props.sizeWord, nMatrix) {
@@ -62,7 +63,9 @@ func IsMutant(matrix []string) (bool, error) {
 				go func(){
 					if nMatrix - col >= props.sizeWord {
 						if SearchHorizontalWord(matrix, row, col, props.sizeWord) {
+							mutex.Lock()
 							wordsFinded++
+							mutex.Unlock()
 						}
 					}
 					wg.Done()
@@ -71,7 +74,9 @@ func IsMutant(matrix []string) (bool, error) {
 				go func(){
 					if nMatrix - row >= props.sizeWord {
 						if SearchVerticalWord(matrix, row, col, props.sizeWord) {
+							mutex.Lock()
 							wordsFinded++
+							mutex.Unlock()
 						}
 					}
 					wg.Done()
@@ -80,7 +85,9 @@ func IsMutant(matrix []string) (bool, error) {
 				go func() {
 					if nMatrix - col >= props.sizeWord && nMatrix - row >= props.sizeWord {
 						if SearchDiagonalDownWord(matrix, row, col, props.sizeWord) {
+							mutex.Lock()
 							wordsFinded++
+							mutex.Unlock()
 						}
 					}
 					wg.Done()
@@ -89,7 +96,9 @@ func IsMutant(matrix []string) (bool, error) {
 				go func() {
 					if nMatrix - col >= props.sizeWord && row + 1 >= props.sizeWord {
 						if SearchDiagonalUpWord(matrix, row, col, props.sizeWord) {
+							mutex.Lock()
 							wordsFinded++
+							mutex.Unlock()
 						}
 					}
 					wg.Done()
